@@ -1,10 +1,11 @@
-import "./App.css";
+import React, { useRef, useEffect } from "react";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
-import { useRef, useState, useEffect } from "react";
 function App() {
   const containerRef = useRef(null);
+  const modelRef = useRef(null); // Ref para acceder al modelo
+  const animationRef = useRef(null); // Ref para acceder a la animación
 
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -18,33 +19,62 @@ function App() {
     const renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
     containerRef.current.appendChild(renderer.domElement);
-    //const geometry = new THREE.BoxGeometry(1, 1, 1);
-    //const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    // const cube = new THREE.Mesh(geometry, material);
+
     const loader = new GLTFLoader();
     loader.load(`${process.env.PUBLIC_URL}/menu.glb`, (glb) => {
-      const root = glb.scene;
-      root.scale.set(0.2, 0.07, 0.3);
-      scene.add(root);
-      
+
+      const model = glb.scene;
+      model.scale.set(0.1, 0.07, 0.4);
+
+      // Crear un nuevo material de color verde
+      const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+
+      // Recorrer todas las mallas del modelo y aplicar el nuevo material
+      model.traverse((child) => {
+        if (child.isMesh) {
+          child.material = material;
+        }
+      });
+
+      scene.add(model);
+      modelRef.current = model; // Asignar el modelo al ref para acceder desde animate
+
+      // Iniciar la animación del modelo (si existe)
+      if (model.animations && model.animations.length > 0) {
+        animationRef.current = new THREE.AnimationMixer(model);
+        const action = animationRef.current.clipAction(model.animations[0]);
+        action.play();
+      }
     });
+
     const light = new THREE.DirectionalLight();
     light.position.set(5, 5, 10);
     light.rotation.x += 0.01;
     light.rotation.y += 0.01;
     
     scene.add(light);
-    //scene.add(cube);
 
-    camera.position.z = 3.1;
+
+    camera.position.z = 3;
+
     function animate() {
       requestAnimationFrame(animate);
-      // cube.rotation.x += 0.01;
-      //cube.rotation.y += 0.01;
+
+      // Verificar si la animación está en progreso y actualizarla
+      if (animationRef.current) {
+        animationRef.current.update(0.01); // Tiempo delta para la actualización de la animación
+      }
+
+      // Verificar si el modelo está disponible antes de aplicar la rotación
+      if (modelRef.current) {
+        modelRef.current.rotation.x += 0.01; // Ajusta la velocidad de rotación aquí
+      }
+
       renderer.render(scene, camera);
     }
+
     animate();
-  });
+  }, []);
 
   return <div ref={containerRef} />;
 }
