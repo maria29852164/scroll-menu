@@ -24,15 +24,19 @@ function App() {
     const loader = new GLTFLoader();
     loader.load(`${process.env.PUBLIC_URL}/menu.glb`, (glb) => {
       const root = glb.scene;
-      root.scale.set(0.2, 0.09, 0.3);
+      root.scale.set(0.2, 0.07, 0.3);
       scene.add(root);
+      
     });
     const light = new THREE.DirectionalLight();
-    light.position.set(2, 2, 5);
+    light.position.set(5, 5, 10);
+    light.rotation.x += 0.01;
+    light.rotation.y += 0.01;
+    
     scene.add(light);
     //scene.add(cube);
 
-    camera.position.z = 3;
+    camera.position.z = 3.1;
     function animate() {
       requestAnimationFrame(animate);
       // cube.rotation.x += 0.01;
