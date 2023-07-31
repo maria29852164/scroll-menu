@@ -23,28 +23,34 @@ function App() {
     const loader = new GLTFLoader();
     loader.load(`${process.env.PUBLIC_URL}/menu.glb`, (glb) => {
       const model = glb.scene;
-      model.scale.set(0.2, 0.07, 0.6);
+      model.scale.set(0.2, 0.5, 0.6);
+      model.rotation.y = -1.5;
+      model.rotation.x = 0.4;
 
       // Crear un nuevo material de color verde
-      const material = new THREE.MeshStandardMaterial();
+      const greenMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 
       // Recorrer todas las mallas del modelo y aplicar el nuevo material
-      model.traverse((child) => {
-        model.traverse((child) => {
-          if (child.isMesh) {
-            const material = child.material;
-            console.log(material);
-            if (material.map) {
-              // Si existe una textura en el material, obtener la textura
-              const texture = material.map;
-              console.log("Textura encontrada:", texture);
 
-              // Ahora puedes utilizar la 'texture' en Three.js, por ejemplo:
-              // const materialConTextura = new THREE.MeshBasicMaterial({ map: texture });
-              // child.material = materialConTextura;
-            }
+      model.traverse((child) => {
+        if (child.isMesh) {
+          const material = child.material;
+          // Verificar si el material tiene un mapa de textura
+          if (material.map) {
+            // Si el material ya tiene un mapa de textura, no es necesario hacer nada aquí.
+          } else {
+            // Si el material no tiene un mapa de textura, cargamos y asignamos la textura
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(
+              `${process.env.PUBLIC_URL}/ruta_de_la_textura.jpg`,
+              (texture) => {
+                // Asignar la textura al material
+                material.map = texture;
+                material.needsUpdate = true; // Actualizar el material para reflejar los cambios
+              }
+            );
           }
-        });
+        }
       });
 
       scene.add(model);
@@ -61,23 +67,26 @@ function App() {
     const light = new THREE.DirectionalLight();
     light.position.set(2, 2, 5);
     scene.add(light);
-
-    camera.position.z = 3;
+    if (modelRef.current) {
+      camera.lookAt(modelRef.current.position);
+    }
 
     function animate() {
-      requestAnimationFrame(animate);
+      setTimeout(() => {
+        requestAnimationFrame(animate);
 
-      // Verificar si la animación está en progreso y actualizarla
-      if (animationRef.current) {
-        animationRef.current.update(0.01); // Tiempo delta para la actualización de la animación
-      }
+        // Verificar si la animación está en progreso y actualizarla
+        if (animationRef.current) {
+          animationRef.current.update(0.01); // Tiempo delta para la actualización de la animación
+        }
 
-      // Verificar si el modelo está disponible antes de aplicar la rotación
-      if (modelRef.current) {
-        //   modelRef.current.rotation.x += 0.01; // Ajusta la velocidad de rotación aquí
-      }
+        // Verificar si el modelo está disponible antes de aplicar la rotación
+        if (modelRef.current) {
+          //   modelRef.current.rotation.x += 0.01; // Ajusta la velocidad de rotación aquí
+        }
 
-      renderer.render(scene, camera);
+        renderer.render(scene, camera);
+      }, 500);
     }
 
     animate();
