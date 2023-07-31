@@ -23,7 +23,7 @@ function App() {
     const loader = new GLTFLoader();
     loader.load(`${process.env.PUBLIC_URL}/menu.glb`, (glb) => {
       const model = glb.scene;
-      model.scale.set(0.2, 0.5, 0.6);
+      model.scale.set(0.03, 0.3, 0.6);
       model.rotation.y = -1.5;
       model.rotation.x = 0.4;
 
@@ -67,9 +67,8 @@ function App() {
     const light = new THREE.DirectionalLight();
     light.position.set(2, 2, 5);
     scene.add(light);
-    if (modelRef.current) {
-      camera.lookAt(modelRef.current.position);
-    }
+
+    camera.position.z = 3;
 
     function animate() {
       setTimeout(() => {
