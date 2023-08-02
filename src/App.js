@@ -24,16 +24,34 @@ function App() {
     loader.load(`${process.env.PUBLIC_URL}/menu.glb`, (glb) => {
 
       const model = glb.scene;
-      model.scale.set(0.1, 0.05, 0.5);
-      model.rotation.y = 0.05;
+
+      model.scale.set(0.03, 0.3, 0.6);
+      model.rotation.y = -1.5;
+      model.rotation.x = 0.4;
 
       // Crear un nuevo material de color verde
-      const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      const greenMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 
       // Recorrer todas las mallas del modelo y aplicar el nuevo material
+
       model.traverse((child) => {
         if (child.isMesh) {
-          child.material = material;
+          const material = child.material;
+          // Verificar si el material tiene un mapa de textura
+          if (material.map) {
+            // Si el material ya tiene un mapa de textura, no es necesario hacer nada aquí.
+          } else {
+            // Si el material no tiene un mapa de textura, cargamos y asignamos la textura
+            const textureLoader = new THREE.TextureLoader();
+            textureLoader.load(
+              `${process.env.PUBLIC_URL}/ruta_de_la_textura.jpg`,
+              (texture) => {
+                // Asignar la textura al material
+                material.map = texture;
+                material.needsUpdate = true; // Actualizar el material para reflejar los cambios
+              }
+            );
+          }
         }
       });
       scene.add(model);
@@ -60,19 +78,22 @@ function App() {
     // camera.position.x = 3;
 
     function animate() {
-      requestAnimationFrame(animate);
+      setTimeout(() => {
+        requestAnimationFrame(animate);
 
-      // Verificar si la animación está en progreso y actualizarla
-      if (animationRef.current) {
-        animationRef.current.update(0.01); // Tiempo delta para la actualización de la animación
-      }
+        // Verificar si la animación está en progreso y actualizarla
+        if (animationRef.current) {
+          animationRef.current.update(0.01); // Tiempo delta para la actualización de la animación
+        }
 
-      // Verificar si el modelo está disponible antes de aplicar la rotación
-      if (modelRef.current) {
-        modelRef.current.rotation.x += 0.005; // Ajusta la velocidad de rotación aquí
-      }
 
-      renderer.render(scene, camera);
+        // Verificar si el modelo está disponible antes de aplicar la rotación
+        if (modelRef.current) {
+          //   modelRef.current.rotation.x += 0.01; // Ajusta la velocidad de rotación aquí
+        }
+
+        renderer.render(scene, camera);
+      }, 500);
     }
 
     animate();
